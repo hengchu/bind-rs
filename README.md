@@ -1,4 +1,5 @@
 # bind-rs
+![Tests](https://github.com/hengchu/bind-rs/workflows/Tests/badge.svg)
 A crate for experimenting with MTL-style monads in rust
 
 ### Why?
