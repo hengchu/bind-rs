@@ -13,9 +13,9 @@ from is OCaml's. This crate spiritually follows the OCaml monad design, but uses
 rust traits instead of modules.
 
 Basically, to declare to the type system that some type `T` is a monad, we need
-to first create a `TM` that acts as a "namespace" for the monad `T`. Then, the
+to first create a type `TM` that acts as a "namespace" for the monad `T`. Then, the
 namespace and the actual monad representation `T` are connected through generic
-associated types (at the moment, still an incomplete feature).
+associated types (at the moment, still an incomplete feature of `rustc`).
 
 For details, check out `src/identity.rs`, `src/future.rs` or `src/state.rs`.
 
