@@ -6,6 +6,7 @@ pub mod identity;
 pub mod reader;
 pub mod reader_future;
 pub mod state;
+pub mod writer;
 
 #[cfg(test)]
 mod tests {
