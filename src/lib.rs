@@ -3,6 +3,8 @@
 pub mod bind;
 pub mod future;
 pub mod identity;
+pub mod reader;
+pub mod reader_future;
 pub mod state;
 
 #[cfg(test)]
@@ -12,7 +14,7 @@ mod tests {
         assert_eq!(2 + 2, 4);
     }
 
-    use super::{bind::*, future::*, identity::*, state::*};
+    use super::{bind::*, future::*, identity::*, reader_future::*, state::*};
     use futures::executor;
 
     fn pure<'a, M: Monad<'a>>() -> M::Repr<i64> {
@@ -55,5 +57,17 @@ mod tests {
     fn pure_infix2state() {
         let st_repr = pure_infix::<StateM<()>>();
         assert_eq!(st_repr.eval(()), 4);
+    }
+
+    #[test]
+    fn pure2readerfuture() {
+        let repr = pure::<ReaderFutureM<()>>();
+        assert_eq!(executor::block_on(repr.run(&())), 4);
+    }
+
+    #[test]
+    fn pure_infix2readerfuture() {
+        let repr = pure_infix::<ReaderFutureM<()>>();
+        assert_eq!(executor::block_on(repr.run(&())), 4);
     }
 }

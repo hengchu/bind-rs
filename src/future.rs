@@ -1,11 +1,23 @@
 use super::bind::*;
 use futures::{
     future::{self, BoxFuture},
-    FutureExt,
+    Future, FutureExt,
 };
 
 /// A namespace for the `Future` monad.
 pub struct FutureM;
+
+/// MTL-style future monad.
+pub trait MonadFuture<'a>: Monad<'a> {
+    /// Lift an arbitrary future computation into the monad.
+    fn lift_future<T, Fut: Future<Output = T> + Send + Unpin + 'a>(fut: Fut) -> Self::Repr<T>;
+}
+
+impl<'a> MonadFuture<'a> for FutureM {
+    fn lift_future<T, Fut: Future<Output = T> + Send + Unpin + 'a>(fut: Fut) -> Self::Repr<T> {
+        fut.boxed()
+    }
+}
 
 impl<'a> Monad<'a> for FutureM {
     type Repr<T: 'a> = BoxFuture<'a, T>;
