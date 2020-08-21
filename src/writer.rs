@@ -10,8 +10,8 @@ pub struct WriterM<W>(PhantomData<W>);
 
 /// The representation of a writer monad.
 pub struct Writer<W, T> {
-    result: T,
-    trace: W,
+    pub result: T,
+    pub trace: W,
 }
 
 /// Abstractions for creating empty traces and appending traces.

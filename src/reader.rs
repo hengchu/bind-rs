@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 pub struct ReaderM<Env>(PhantomData<Env>);
 
 /// The representation of a reader monad.
-pub struct Reader<'env, Env, T>(Box<dyn FnOnce(&'env Env) -> T + Send + 'env>);
+pub struct Reader<'env, Env, T>(pub Box<dyn FnOnce(&'env Env) -> T + Send + 'env>);
 
 /// MTL-style reader monad actions.
 pub trait MonadReader<'env, Env: 'env>: Monad<'env> {

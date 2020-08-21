@@ -5,6 +5,7 @@ pub mod future;
 pub mod identity;
 pub mod reader;
 pub mod reader_future;
+pub mod reader_writer;
 pub mod state;
 pub mod writer;
 
