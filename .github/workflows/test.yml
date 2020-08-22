@@ -25,4 +25,5 @@ jobs:
     - name: Run examples
       uses: actions-rs/cargo@v1
       with:
-        command: run --example balance
+        command: run
+        args: --example balance
