@@ -12,6 +12,13 @@ pub struct ReaderWriterM<Env, W> {
 /// Representation of reader writer monad.
 pub struct ReaderWriter<'env, Env, W, T>(Reader<'env, Env, Writer<W, T>>);
 
+impl<'env, Env, W, T> ReaderWriter<'env, Env, W, T> {
+    pub fn run(self, env_ref: &'env Env) -> (W, T) {
+        let Writer { result, trace } = ((self.0).0)(env_ref);
+        (trace, result)
+    }
+}
+
 impl<'env, Env: 'env, W: 'env + Send + AppendTrace> MonadReader<'env, Env>
     for ReaderWriterM<Env, W>
 {
@@ -20,6 +27,13 @@ impl<'env, Env: 'env, W: 'env + Send + AppendTrace> MonadReader<'env, Env>
             result: env_ref,
             trace: W::empty(),
         })))
+    }
+
+    fn local<R: 'env, F: 'env>(f: F, a: Self::Repr<R>) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a Env) -> &'a Env + Send,
+    {
+        ReaderWriter(Reader(Box::new(move |env_ref| ((a.0).0)(f(env_ref)))))
     }
 
     fn ask() -> Self::Repr<Env>

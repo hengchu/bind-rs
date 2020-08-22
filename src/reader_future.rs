@@ -34,6 +34,16 @@ impl<'env, Env: 'env + Sync + Send> MonadReader<'env, Env> for ReaderFutureM<Env
     }
 
     #[inline]
+    fn local<R: 'env, F: 'env>(f: F, a: Self::Repr<R>) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a Env) -> &'a Env + Send,
+    {
+        ReaderFuture(Box::new(move |env_ref| {
+            async move { (a.0)(f(env_ref)).await }.boxed()
+        }))
+    }
+
+    #[inline]
     fn ask() -> Self::Repr<Env>
     where
         Env: Clone,

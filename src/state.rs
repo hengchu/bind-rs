@@ -10,7 +10,18 @@ pub struct State<'st, St, T>(Box<dyn FnOnce(St) -> (St, T) + Send + 'st>);
 
 /// MTL-style state monad actions.
 pub trait MonadState<'st, St: 'st>: Monad<'st> {
-    fn get() -> Self::Repr<St>;
+    fn get() -> Self::Repr<St>
+    where
+        St: Clone;
+
+    fn with_ref<R: 'st, F: 'st>(f: F) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a St) -> Self::Repr<R> + Send;
+
+    fn with_mut<R: 'st, F: 'st>(f: F) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a mut St) -> Self::Repr<R> + Send;
+
     fn put(st: St) -> Self::Repr<()>;
 }
 
@@ -24,10 +35,35 @@ impl<'st, St, T> State<'st, St, T> {
     }
 }
 
-impl<'st, St: 'st + Send + Clone> MonadState<'st, St> for StateM<St> {
+impl<'st, St: 'st + Send> MonadState<'st, St> for StateM<St> {
     #[inline]
-    fn get() -> Self::Repr<St> {
+    fn get() -> Self::Repr<St>
+    where
+        St: Clone,
+    {
         State(Box::new(|st| (st.clone(), st)))
+    }
+
+    #[inline]
+    fn with_ref<R: 'st, F: 'st>(f: F) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a St) -> Self::Repr<R> + Send,
+    {
+        State(Box::new(move |st| {
+            let f_repr = { f(&st).0 };
+            f_repr(st)
+        }))
+    }
+
+    #[inline]
+    fn with_mut<R: 'st, F: 'st>(f: F) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a mut St) -> Self::Repr<R> + Send,
+    {
+        State(Box::new(move |mut st| {
+            let f_repr = { f(&mut st).0 };
+            f_repr(st)
+        }))
     }
 
     #[inline]

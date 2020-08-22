@@ -58,3 +58,14 @@ impl<'a, W: AppendTrace, T: 'a> MonadRepr<'a, WriterM<W>> for Writer<W, T> {
         <WriterM<W> as Monad<'a>>::bind_impl(self, f)
     }
 }
+
+impl<T> AppendTrace for Vec<T> {
+    fn empty() -> Self {
+        Vec::new()
+    }
+
+    fn append(mut self, other: Self) -> Self {
+        self.extend(other);
+        self
+    }
+}

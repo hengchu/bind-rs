@@ -18,7 +18,13 @@ to first create a type `TM` that acts as a "namespace" for the monad `T`. Then, 
 namespace and the actual monad representation `T` are connected through generic
 associated types (at the moment, still an incomplete feature of `rustc`).
 
-For details, check out `src/identity.rs`, `src/future.rs` or `src/state.rs`.
+For details, check out any of the `src/identity.rs`, `src/future.rs` or
+`src/state.rs`, etc.
 
 ### Examples
 Check out the small testsuite in `src/lib.rs`
+
+Also checkout `examples/balance.rs`, which implements an example of where a
+`ReaderWriter` monad stack may be used to hold some state inside a structure
+with interior mutability in the reader environment, and uses the writer monad to
+record all operations performed on the environment.

@@ -13,6 +13,11 @@ pub trait MonadReader<'env, Env: 'env>: Monad<'env> {
     /// Get a reference to the environment.
     fn ask_ref() -> Self::Repr<&'env Env>;
 
+    /// Run a computation in a modified local environment.
+    fn local<R: 'env, F: 'env>(f: F, a: Self::Repr<R>) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a Env) -> &'a Env + Send;
+
     /// Get an owned clone of the environment.
     fn ask() -> Self::Repr<Env>
     where
@@ -23,6 +28,14 @@ impl<'env, Env: 'env> MonadReader<'env, Env> for ReaderM<Env> {
     #[inline]
     fn ask_ref() -> Self::Repr<&'env Env> {
         Reader(Box::new(|env_ref| env_ref))
+    }
+
+    #[inline]
+    fn local<R: 'env, F: 'env>(f: F, a: Self::Repr<R>) -> Self::Repr<R>
+    where
+        F: for<'a> FnOnce(&'a Env) -> &'a Env + Send,
+    {
+        Reader(Box::new(|env_ref| (a.0)(f(env_ref))))
     }
 
     #[inline]
