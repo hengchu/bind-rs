@@ -26,6 +26,12 @@ pub trait MonadWriter<'a, W>: Monad<'a> {
     fn write(trace: W) -> Self::Repr<()>;
 }
 
+impl<'a, W: AppendTrace> MonadWriter<'a, W> for WriterM<W> {
+    fn write(trace: W) -> Self::Repr<()> {
+        Writer { result: (), trace }
+    }
+}
+
 impl<'a, W: AppendTrace> Monad<'a> for WriterM<W> {
     type Repr<T: 'a> = Writer<W, T>;
 
