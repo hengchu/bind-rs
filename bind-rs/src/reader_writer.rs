@@ -10,11 +10,11 @@ pub struct ReaderWriterM<Env, W> {
 }
 
 /// Representation of reader writer monad.
-pub struct ReaderWriter<'env, Env, W, T>(Reader<'env, Env, Writer<W, T>>);
+pub struct ReaderWriter<'env, Env, W, T>(Reader<'env, Env, Writer<'env, W, T>>);
 
 impl<'env, Env, W, T> ReaderWriter<'env, Env, W, T> {
     pub fn run(self, env_ref: &'env Env) -> (W, T) {
-        let Writer { result, trace } = ((self.0).0)(env_ref);
+        let Writer { result, trace, .. } = ((self.0).0)(env_ref);
         (trace, result)
     }
 }
@@ -24,6 +24,7 @@ impl<'env, Env: 'env, W: 'env + Send + AppendTrace> MonadReader<'env, Env>
 {
     fn ask_ref() -> Self::Repr<&'env Env> {
         ReaderWriter(Reader(Box::new(|env_ref| Writer {
+            lifetime: PhantomData,
             result: env_ref,
             trace: W::empty(),
         })))
@@ -41,6 +42,7 @@ impl<'env, Env: 'env, W: 'env + Send + AppendTrace> MonadReader<'env, Env>
         Env: Clone,
     {
         ReaderWriter(Reader(Box::new(|env_ref| Writer {
+            lifetime: PhantomData,
             result: env_ref.clone(),
             trace: W::empty(),
         })))
@@ -49,7 +51,11 @@ impl<'env, Env: 'env, W: 'env + Send + AppendTrace> MonadReader<'env, Env>
 
 impl<'env, Env: 'env, W: 'env + Send + AppendTrace> MonadWriter<'env, W> for ReaderWriterM<Env, W> {
     fn write(trace: W) -> Self::Repr<()> {
-        ReaderWriter(Reader(Box::new(move |_| Writer { result: (), trace })))
+        ReaderWriter(Reader(Box::new(move |_| Writer {
+            lifetime: PhantomData,
+            result: (),
+            trace,
+        })))
     }
 }
 
@@ -64,13 +70,16 @@ impl<'env, Env: 'env, W: 'env + Send + AppendTrace> Monad<'env> for ReaderWriter
             let Writer {
                 trace: v_trace,
                 result: v_result,
+                ..
             } = ((v.0).0)(env_ref);
             let f_repr = f(v_result);
             let Writer {
                 trace: f_trace,
                 result: f_result,
+                ..
             } = ((f_repr.0).0)(env_ref);
             Writer {
+                lifetime: PhantomData,
                 trace: v_trace.append(f_trace),
                 result: f_result,
             }
@@ -79,6 +88,7 @@ impl<'env, Env: 'env, W: 'env + Send + AppendTrace> Monad<'env> for ReaderWriter
 
     fn ret<A: 'env + Send>(v: A) -> Self::Repr<A> {
         ReaderWriter(ReaderM::<Env>::ret(Writer {
+            lifetime: PhantomData,
             result: v,
             trace: W::empty(),
         }))

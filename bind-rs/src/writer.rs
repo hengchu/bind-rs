@@ -9,7 +9,8 @@ use std::marker::PhantomData;
 pub struct WriterM<W>(PhantomData<W>);
 
 /// The representation of a writer monad.
-pub struct Writer<W, T> {
+pub struct Writer<'a, W, T> {
+    pub lifetime: PhantomData<&'a ()>,
     pub result: T,
     pub trace: W,
 }
@@ -28,12 +29,16 @@ pub trait MonadWriter<'a, W>: Monad<'a> {
 
 impl<'a, W: AppendTrace> MonadWriter<'a, W> for WriterM<W> {
     fn write(trace: W) -> Self::Repr<()> {
-        Writer { result: (), trace }
+        Writer {
+            lifetime: PhantomData,
+            result: (),
+            trace,
+        }
     }
 }
 
 impl<'a, W: AppendTrace> Monad<'a> for WriterM<W> {
-    type Repr<T: 'a> = Writer<W, T>;
+    type Repr<T: 'a> = Writer<'a, W, T>;
 
     fn bind_impl<A: 'a, B: 'a, F: 'a>(v: Self::Repr<A>, f: F) -> Self::Repr<B>
     where
@@ -48,13 +53,14 @@ impl<'a, W: AppendTrace> Monad<'a> for WriterM<W> {
 
     fn ret<A: 'a + Send>(v: A) -> Self::Repr<A> {
         Writer {
+            lifetime: PhantomData,
             result: v,
             trace: W::empty(),
         }
     }
 }
 
-impl<'a, W: AppendTrace, T: 'a> MonadRepr<'a, WriterM<W>> for Writer<W, T> {
+impl<'a, W: AppendTrace, T: 'a> MonadRepr<'a, WriterM<W>> for Writer<'a, W, T> {
     type Index = T;
 
     fn bind<B: 'a, F: 'a>(self, f: F) -> <WriterM<W> as Monad<'a>>::Repr<B>
