@@ -1,2 +1,2 @@
 [workspace]
-members = ["bind-rs"]
+members = ["bind-rs", "bind-rs_derive"]

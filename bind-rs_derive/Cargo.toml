@@ -1,0 +1,20 @@
+[package]
+name = "bind-rs_derive"
+version = "0.1.0"
+authors = ["hengchu <hengchu.zhang@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+syn = { version = "1.0.39", features = ["full", "extra-traits"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+
+[dev-dependencies.bind-rs]
+path = "../bind-rs"
+version = "0.1.0"
+
+[lib]
+name = "bind_rs_derive"
+path = "src/lib.rs"
+edition = "2018"
+proc-macro = true
