@@ -1,5 +1,5 @@
 /// A monad is something that we can inject into/bind computations with.
-pub trait Monad<'a> {
+pub trait Monad<'a>: Sized {
     /// A `Repr<'a, T>` is a monadic value indexed by type `T`, and is valid for
     /// the given scope (i.e. must be used/evaluated within the specified
     /// scope).

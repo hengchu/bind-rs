@@ -53,7 +53,7 @@ impl<'env, Env: 'env + Sync + Send> MonadReader<'env, Env> for ReaderFutureM<Env
 }
 
 impl<'env, Env: 'env + Sync> MonadFuture<'env> for ReaderFutureM<Env> {
-    fn lift_future<T, Fut: Future<Output = T> + Send + 'env>(fut: Fut) -> Self::Repr<T> {
+    fn lift_future<T: 'env, Fut: Future<Output = T> + Send + 'env>(fut: Fut) -> Self::Repr<T> {
         ReaderFuture(Box::new(move |_| fut.boxed()))
     }
 }

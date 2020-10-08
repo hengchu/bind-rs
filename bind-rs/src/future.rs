@@ -10,11 +10,11 @@ pub struct FutureM;
 /// MTL-style future monad.
 pub trait MonadFuture<'a>: Monad<'a> {
     /// Lift an arbitrary future computation into the monad.
-    fn lift_future<T, Fut: Future<Output = T> + Send + 'a>(fut: Fut) -> Self::Repr<T>;
+    fn lift_future<T: 'a, Fut: Future<Output = T> + Send + 'a>(fut: Fut) -> Self::Repr<T>;
 }
 
 impl<'a> MonadFuture<'a> for FutureM {
-    fn lift_future<T, Fut: Future<Output = T> + Send + 'a>(fut: Fut) -> Self::Repr<T> {
+    fn lift_future<T: 'a, Fut: Future<Output = T> + Send + 'a>(fut: Fut) -> Self::Repr<T> {
         fut.boxed()
     }
 }
